@@ -1,6 +1,6 @@
---- a/cmake/deps-utils/CoCoALib-0.99800-trace.patch
-+++ b/cmake/deps-utils/CoCoALib-0.99800-trace.patch
-@@ -200,3 +200,57 @@
+--- a/vendor/cvc5/cmake/deps-utils/CoCoALib-0.99800-trace.patch
++++ b/vendor/cvc5/cmake/deps-utils/CoCoALib-0.99800-trace.patch
+@@ -200,3 +200,54 @@
       fi
     fi
   fi
@@ -37,15 +37,13 @@
 +     exit 3
 +   fi
 + fi
-+--- a/configuration/gmp-find-lib.sh
-++++ b/configuration/gmp-find-lib.sh
-+@@ -31,9 +31,17 @@ fi
++--- a/configuration/gmp-find.sh
+++++ b/configuration/gmp-find.sh
++@@ -13,7 +13,14 @@
++ # NB look through all directories, even if a GMP has already been found.
 +
 + # List of directories under which libgmp.a and/or libgmp.so is normally found.
-+ ARCH=$(uname -m)      #so far seen:  x86_64, aarch64, i686, i386
-+-STD_GMP_LIBDIRS="/usr/local/lib  /usr/lib  /usr/lib/$ARCH-linux-gnu   /usr/lib64  /usr/lib32  /usr/lib/i386-linux-gnu  /opt/homebrew/lib  /opt/local/lib  /sw/lib  /usr/sfw/lib"
-+
-+
++-STD_GMP_LIBDIRS="/usr/lib  /usr/lib/x86_64-linux-gnu  /usr/lib/i386-linux-gnu  /usr/lib64  /usr/lib32  /usr/local/lib  /opt/local/lib  /sw/lib  /usr/sfw/lib"
 ++STD_GMP_LIBDIRS="/usr/local/lib /usr/lib /usr/lib/$ARCH-linux-gnu /usr/lib64
 ++                 /usr/lib32 /usr/lib/i386-linux-gnu /opt/homebrew/lib
 ++                 /opt/local/lib /sw/lib /usr/sfw/lib"
@@ -54,8 +52,6 @@
 ++if command -v pkg-config >/dev/null 2>&1 && pkg-config --exists gmp; then
 ++    STD_GMP_LIBDIRS="$(pkg-config --variable=libdir gmp 2>/dev/null) $STD_GMP_LIBDIRS"
 ++fi
-++
-+ LIBGMPPATHS=libgmp-paths
-+ /bin/rm -rf "$LIBGMPPATHS"
-+ COUNTER=0
-\ No newline at end of file
++ # # Some versions of Linux put libgmp.a in an immediate subdirectory of /usr/lib/
++ # for file in /usr/lib/*
++ # do
