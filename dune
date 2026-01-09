@@ -1,44 +1,28 @@
-(env
- (_
-  (env-vars
-   (CMAKE_INCLUDE_PATH "../../cadical/src/:../../libpoly/:../../")
-   (CMAKE_LIBRARY_PATH "../../cadical/build/:../../libpoly/build/src/"))))
-
 (rule
  (deps
   (source_tree vendor))
- (targets libpicpolyxx.a libpicpoly.a libcadical.a libcvc5.a cvc5_export.h)
+ (targets libcadical.a libcln.a libcocoa.a libcryptominisat5.a libglpk.a libkissat.a libpicpoly.a libpicpolyxx.a libcvc5.a cvc5.exe cvc5_export.h)
  (action
   (no-infer
    (progn
     (chdir
-     vendor/cadical
-     (progn
-      (bash "CXXFLAGS=-fPIC ./configure")
-      (bash "make -j $(opam var jobs)")))
-    (copy vendor/cadical/build/libcadical.a libcadical.a)
-    (chdir
-     vendor/libpoly
-     (progn
-      (run
-       cmake
-       -B
-       build
-       -DCMAKE_BUILD_TYPE=$type
-       -DCMAKE_INSTALL_PREFIX=$prefix)
-      (chdir
-       build
-       (bash "make -j $(opam var jobs)"))
-      (run mv include poly)))
-    (copy vendor/libpoly/build/src/libpicpoly.a libpicpoly.a)
-    (copy vendor/libpoly/build/src/libpicpolyxx.a libpicpolyxx.a)
-    (chdir
      vendor/cvc5
      (progn
-      (bash "./configure.sh --static")
+      (bash "patch -p1 -d . -i ../../resources/gmp.patch")
+      (bash "./configure.sh --static --auto-download --no-pyvenv --gpl --ipo --cryptominisat --kissat --poly --cocoa --cln --glpk")
       (bash "make -C build -j $(opam var jobs)")))
+    (copy vendor/cvc5/build/deps/lib/libcadical.a libcadical.a)
+    (copy vendor/cvc5/build/deps/lib/libcln.a libcln.a)
+    (copy vendor/cvc5/build/deps/lib/libcocoa.a libcocoa.a)
+    (copy vendor/cvc5/build/deps/lib/libcryptominisat5.a libcryptominisat5.a)
+    (copy vendor/cvc5/build/deps/lib/libglpk.a libglpk.a)
+    (copy vendor/cvc5/build/deps/lib/libkissat.a libkissat.a)
+    (copy vendor/cvc5/build/deps/lib/libpicpoly.a libpicpoly.a)
+    (copy vendor/cvc5/build/deps/lib/libpicpolyxx.a libpicpolyxx.a)
     (copy vendor/cvc5/build/src/libcvc5.a libcvc5.a)
-    (copy vendor/cvc5/build/include/cvc5/cvc5_export.h cvc5_export.h)))))
+    (copy vendor/cvc5/build/src/libcvc5.a libcvc5.a)
+    (copy vendor/cvc5/build/include/cvc5/cvc5_export.h cvc5_export.h)
+    (copy vendor/cvc5/build/bin/cvc5 cvc5.exe)))))
 
 (subdir
  vendor/cvc5/include/cvc5
@@ -58,8 +42,13 @@
   (names cvc5_stubs)
   (flags :standard -std=c++17 -I/opt/homebrew/include)
   (include_dirs vendor/cvc5/include vendor/cvc5/src vendor/cvc5/src/lib))
- (foreign_archives cvc5 cadical picpoly picpolyxx)
- (c_library_flags :standard -std=c++17 -L/opt/homebrew/lib -lgmp))
+ (foreign_archives cvc5 cadical cln cocoa cryptominisat5 glpk kissat picpoly picpolyxx)
+ (c_library_flags :standard -std=c++17 -L/opt/homebrew/lib -lgmp -lcln))
+
+(install
+ (files (cvc5.exe as cvc5))
+ (section bin)
+ (package cvc5))
 
 (rule
  (deps ./api/cvc5_enums.exe)
