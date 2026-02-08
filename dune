@@ -1,7 +1,7 @@
 (rule
  (deps
   (source_tree vendor))
- (targets libcadical.a libcocoa.a libcryptominisat5.a libglpk.a libkissat.a libpicpoly.a libpicpolyxx.a libcvc5.a cvc5.exe cvc5_export.h)
+ (targets libcadical.a libcln.a libcocoa.a libcryptominisat5.a libglpk.a libkissat.a libpicpoly.a libpicpolyxx.a libcvc5.a cvc5.exe cvc5_export.h)
  (action
   (no-infer
    (progn
@@ -12,6 +12,7 @@
       (bash "./configure.sh --static --auto-download --no-pyvenv --gpl --ipo --cryptominisat --kissat --poly --cocoa --cln --glpk")
       (bash "make -C build -j $(opam var jobs)")))
     (copy vendor/cvc5/build/deps/lib/libcadical.a libcadical.a)
+    (copy vendor/cvc5/build/deps/lib/libcln.a libcln.a)
     (copy vendor/cvc5/build/deps/lib/libcocoa.a libcocoa.a)
     (copy vendor/cvc5/build/deps/lib/libcryptominisat5.a libcryptominisat5.a)
     (copy vendor/cvc5/build/deps/lib/libglpk.a libglpk.a)
@@ -41,7 +42,7 @@
   (names cvc5_stubs)
   (flags :standard -std=c++17 -I/opt/homebrew/include)
   (include_dirs vendor/cvc5/include vendor/cvc5/src vendor/cvc5/src/lib))
- (foreign_archives cvc5 cadical cocoa cryptominisat5 glpk kissat picpoly picpolyxx)
+ (foreign_archives cvc5 cadical cln cocoa cryptominisat5 glpk kissat picpoly picpolyxx)
  (c_library_flags :standard -std=c++17 -L/opt/homebrew/lib -lgmp -lcln))
 
 (install
