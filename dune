@@ -43,7 +43,7 @@
   (flags :standard -std=c++17 -I/opt/homebrew/include)
   (include_dirs vendor/cvc5/include vendor/cvc5/src vendor/cvc5/src/lib))
  (foreign_archives cvc5 cadical cln cocoa cryptominisat5 glpk kissat picpoly picpolyxx)
- (c_library_flags :standard -std=c++17 -L/opt/homebrew/lib -lgmp -lcln))
+ (c_library_flags :standard -std=c++17 -L/opt/homebrew/lib -lgmp))
 
 (install
  (files (cvc5.exe as cvc5))
