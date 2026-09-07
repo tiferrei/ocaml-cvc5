@@ -84,6 +84,77 @@ let test_val_interp_real () =
   is_true "is real (i)" (Term.is_real one_float_i);
   check (float 0.0001) "get real (i)" 1.0 (Term.get_real one_float_i)
 
+let test_val_interp_fp () =
+  let tm = TermManager.mk_tm () in
+  let fp = Term.mk_fp_pos_zero tm 8 24 in
+  is_true "is fp" (Term.is_fp fp);
+  let exp, sig_, bits = Term.get_fp fp in
+  check int "fp exponent" 8 exp;
+  check int "fp significand" 24 sig_;
+  is_true "fp bits are a bitvector" (Term.is_bv bits)
+
+let test_lifetime () =
+  let term =
+    let tm = TermManager.mk_tm () in
+    let term = Term.mk_real_s tm "1/3" in
+    TermManager.delete tm;
+    Gc.full_major ();
+    term
+  in
+  check (float 0.0001) "term retains manager" (1.0 /. 3.0)
+    (Term.get_real term);
+  Term.delete term;
+  Gc.full_major ();
+  let sort =
+    let tm = TermManager.mk_tm () in
+    let sort = Sort.mk_real_sort tm in
+    TermManager.delete tm;
+    Gc.full_major ();
+    sort
+  in
+  check string "sort retains manager" "Real" (Sort.to_string sort);
+  Sort.delete sort;
+  Gc.full_major ();
+  let op =
+    let tm = TermManager.mk_tm () in
+    let op = Op.mk_op tm Kind.Bitvector_extract [| 31; 0 |] in
+    TermManager.delete tm;
+    Gc.full_major ();
+    op
+  in
+  is_true "op retains manager" (Op.kind op = Kind.Bitvector_extract);
+  Op.delete op;
+  Gc.full_major ();
+  let value =
+    let tm = TermManager.mk_tm () in
+    let solver = Solver.mk_solver tm in
+    Solver.set_option solver "produce-models" "true";
+    let x = Term.mk_const_s tm (Sort.mk_real_sort tm) "x" in
+    let third = Term.mk_real_s tm "1/3" in
+    Solver.assert_formula solver (Term.mk_term tm Kind.Equal [| x; third |]);
+    is_true "lifetime formula is sat" (Result.is_sat (Solver.check_sat solver));
+    let value = Solver.get_value solver x in
+    TermManager.delete tm;
+    Solver.delete solver;
+    Gc.full_major ();
+    value
+  in
+  check (float 0.0001) "model value retains manager" (1.0 /. 3.0)
+    (Term.get_real value);
+  Term.delete value;
+  Gc.full_major ();
+  let result =
+    let tm = TermManager.mk_tm () in
+    let solver = Solver.mk_solver tm in
+    let result = Solver.check_sat solver in
+    Solver.delete solver;
+    TermManager.delete tm;
+    result
+  in
+  is_true "result survives explicit deletion" (Result.is_sat result);
+  Result.delete result;
+  Gc.full_major ()
+
 (* Check boolean values construction and interpretation *)
 let test_val_interp_bool () =
   let tm = TermManager.mk_tm () in
@@ -161,9 +232,11 @@ let () =
     ; ( "val_interp"
       , [ test_case "int" `Quick test_val_interp_int
         ; test_case "real" `Quick test_val_interp_real
+        ; test_case "floating-point" `Quick test_val_interp_fp
         ; test_case "bool" `Quick test_val_interp_bool
         ; test_case "string" `Quick test_val_interp_string
         ] )
+    ; ("lifetime", [ test_case "manager ownership" `Quick test_lifetime ])
     ; ("model", [ test_case "model generation" `Quick test_model ])
     ; ( "function_sort"
       , [ test_case "function sort and apply_uf" `Quick test_function_sort ] )
