@@ -83,6 +83,8 @@ external mk_bool : term_manager -> bool -> term = "ocaml_cvc5_stub_mk_bool"
 
 external mk_int : term_manager -> int -> term = "ocaml_cvc5_stub_mk_int"
 
+external mk_int_s : term_manager -> string -> term = "ocaml_cvc5_stub_mk_int_s"
+
 external mk_real_s : term_manager -> string -> term
   = "ocaml_cvc5_stub_mk_real_s"
 
@@ -141,6 +143,15 @@ external term_get_int_val : term -> string = "ocaml_cvc5_stub_get_int_value"
 external term_is_int_val : term -> bool = "ocaml_cvc5_stub_is_int_value"
 
 external term_get_real_val : term -> string = "ocaml_cvc5_stub_get_real_value"
+
+external term_is_real_algebraic_number : term -> bool
+  = "ocaml_cvc5_stub_is_real_algebraic_number"
+
+external term_get_real_algebraic_number_lower_bound : term -> term
+  = "ocaml_cvc5_stub_get_real_algebraic_number_lower_bound"
+
+external term_get_real_algebraic_number_upper_bound : term -> term
+  = "ocaml_cvc5_stub_get_real_algebraic_number_upper_bound"
 
 external term_is_real_val : term -> bool = "ocaml_cvc5_stub_is_real_value"
 

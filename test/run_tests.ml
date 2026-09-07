@@ -68,7 +68,10 @@ let test_val_interp_int () =
   let tm = TermManager.mk_tm () in
   let one = Term.mk_int tm 1 in
   is_true "is int" (Term.is_int one);
-  check int "get int" 1 (Term.get_int one)
+  check int "get int" 1 (Term.get_int one);
+  let big = "10000000000000000000000000000000000000000" in
+  check string "get arbitrary-precision int" big
+    (Term.get_int_s (Term.mk_int_s tm big))
 
 (* Check real values contruction and interpretation *)
 let test_val_interp_real () =
@@ -79,10 +82,29 @@ let test_val_interp_real () =
   let one_float_nd = Term.mk_real (TermManager.mk_tm ()) 1L 2L in
   is_true "is real (nd)" (Term.is_real one_float_nd);
   check (float 0.0001) "get real (nd)" 0.5 (Term.get_real one_float_nd);
+  check string "get exact real (nd)" "1/2" (Term.get_real_s one_float_nd);
 
   let one_float_i = Term.mk_real_i (TermManager.mk_tm ()) 1L in
   is_true "is real (i)" (Term.is_real one_float_i);
   check (float 0.0001) "get real (i)" 1.0 (Term.get_real one_float_i)
+
+let test_val_interp_algebraic () =
+  let tm = TermManager.mk_tm () in
+  let solver = Solver.mk_solver ~logic:"QF_NRA" tm in
+  Solver.set_option solver "produce-models" "true";
+  let x = Term.mk_const_s tm (Sort.mk_real_sort tm) "x" in
+  let zero = Term.mk_real_i tm 0L in
+  let two = Term.mk_real_i tm 2L in
+  let square = Term.mk_term tm Kind.Mult [| x; x |] in
+  Solver.assert_formula solver (Term.mk_term tm Kind.Equal [| square; two |]);
+  Solver.assert_formula solver (Term.mk_term tm Kind.Gt [| x; zero |]);
+  is_true "algebraic formula is sat" (Result.is_sat (Solver.check_sat solver));
+  let value = Solver.get_value solver x in
+  is_true "is algebraic" (Term.is_real_algebraic_number value);
+  let lower = Term.get_real_algebraic_number_lower_bound value in
+  let upper = Term.get_real_algebraic_number_upper_bound value in
+  is_true "lower bound" (Term.get_real lower < Float.sqrt 2.0);
+  is_true "upper bound" (Float.sqrt 2.0 < Term.get_real upper)
 
 let test_val_interp_fp () =
   let tm = TermManager.mk_tm () in
@@ -101,8 +123,7 @@ let test_lifetime () =
     Gc.full_major ();
     term
   in
-  check (float 0.0001) "term retains manager" (1.0 /. 3.0)
-    (Term.get_real term);
+  check string "term retains manager" "1/3" (Term.get_real_s term);
   Term.delete term;
   Gc.full_major ();
   let sort =
@@ -139,8 +160,7 @@ let test_lifetime () =
     Gc.full_major ();
     value
   in
-  check (float 0.0001) "model value retains manager" (1.0 /. 3.0)
-    (Term.get_real value);
+  check string "model value retains manager" "1/3" (Term.get_real_s value);
   Term.delete value;
   Gc.full_major ();
   let result =
@@ -232,6 +252,7 @@ let () =
     ; ( "val_interp"
       , [ test_case "int" `Quick test_val_interp_int
         ; test_case "real" `Quick test_val_interp_real
+        ; test_case "algebraic" `Quick test_val_interp_algebraic
         ; test_case "floating-point" `Quick test_val_interp_fp
         ; test_case "bool" `Quick test_val_interp_bool
         ; test_case "string" `Quick test_val_interp_string

@@ -542,6 +542,17 @@ CAMLprim value ocaml_cvc5_stub_mk_int(value v, value i){
   CVC5_TRY_CATCH_END;
 }
 
+CAMLprim value ocaml_cvc5_stub_mk_int_s(value v, value i){
+  CAMLparam2(v, i);
+  CAMLlocal1(custom);
+  TermManagerHandle* handle = TermManager_handle_val(v);
+  CVC5_TRY_CATCH_BEGIN;
+  new(&term_operations, &custom)
+    Term(handle->tm->mkInteger(String_val(i)), handle);
+  CAMLreturn(custom);
+  CVC5_TRY_CATCH_END;
+}
+
 CAMLprim value ocaml_cvc5_stub_mk_real_s(value v, value r){
   CAMLparam2(v, r);
   CAMLlocal1(custom);
@@ -777,6 +788,32 @@ CAMLprim value ocaml_cvc5_stub_is_int_value(value t){
 CAMLprim value ocaml_cvc5_stub_get_real_value(value t){
   CVC5_TRY_CATCH_BEGIN;
   return caml_copy_string(Term_val(t)->getRealValue().c_str());
+  CVC5_TRY_CATCH_END;
+}
+
+CAMLprim value ocaml_cvc5_stub_is_real_algebraic_number(value t){
+  return Val_bool(Term_val(t)->isRealAlgebraicNumber());
+}
+
+CAMLprim value ocaml_cvc5_stub_get_real_algebraic_number_lower_bound(value t){
+  CAMLparam1(t);
+  CAMLlocal1(custom);
+  CVC5_TRY_CATCH_BEGIN;
+  Term* term = Term_val(t);
+  new(&term_operations, &custom)
+    Term(term->getRealAlgebraicNumberLowerBound(), term->getManager());
+  CAMLreturn(custom);
+  CVC5_TRY_CATCH_END;
+}
+
+CAMLprim value ocaml_cvc5_stub_get_real_algebraic_number_upper_bound(value t){
+  CAMLparam1(t);
+  CAMLlocal1(custom);
+  CVC5_TRY_CATCH_BEGIN;
+  Term* term = Term_val(t);
+  new(&term_operations, &custom)
+    Term(term->getRealAlgebraicNumberUpperBound(), term->getManager());
+  CAMLreturn(custom);
   CVC5_TRY_CATCH_END;
 }
 

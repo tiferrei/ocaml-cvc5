@@ -120,6 +120,8 @@ module Term = struct
 
   let mk_int = Cvc5_external.mk_int
 
+  let mk_int_s = Cvc5_external.mk_int_s
+
   let mk_string tm ?(useEscSequences = false) s =
     Cvc5_external.mk_string tm s useEscSequences
 
@@ -172,10 +174,14 @@ module Term = struct
 
   let is_bool = Cvc5_external.term_is_bool_val
 
-  let get_int t = int_of_string (Cvc5_external.term_get_int_val t)
+  let get_int_s = Cvc5_external.term_get_int_val
+
+  let get_int t = int_of_string (get_int_s t)
+
+  let get_real_s = Cvc5_external.term_get_real_val
 
   let get_real t =
-    let real_str = Cvc5_external.term_get_real_val t in
+    let real_str = get_real_s t in
     (* cvc5 returns string of float in fraction format *)
     let fraction_to_float str =
       match String.split_on_char '/' str with
@@ -186,6 +192,14 @@ module Term = struct
       | _ -> assert false
     in
     fraction_to_float real_str
+
+  let is_real_algebraic_number = Cvc5_external.term_is_real_algebraic_number
+
+  let get_real_algebraic_number_lower_bound =
+    Cvc5_external.term_get_real_algebraic_number_lower_bound
+
+  let get_real_algebraic_number_upper_bound =
+    Cvc5_external.term_get_real_algebraic_number_upper_bound
 
   let get_string = Cvc5_external.term_get_string_val
 

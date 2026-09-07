@@ -218,6 +218,9 @@ module Term : sig
       Parameters: - The value of the constant *)
   val mk_int : TermManager.tm -> int -> term
 
+  (** Create an arbitrary-precision integer constant from a decimal string. *)
+  val mk_int_s : TermManager.tm -> string -> term
+
   (** Create a String constant from a string which may contain SMT-LIB
       compatible escape sequences like [\u1234] to encode unicode characters.
 
@@ -344,8 +347,23 @@ module Term : sig
   (** Get the integer value. *)
   val get_int : term -> int
 
+  (** Get the arbitrary-precision integer value as a decimal string. *)
+  val get_int_s : term -> string
+
   (** Get the real value. *)
   val get_real : term -> float
+
+  (** Get the exact rational value as a numerator/denominator string. *)
+  val get_real_s : term -> string
+
+  (** Determine whether a term is a real algebraic number. *)
+  val is_real_algebraic_number : term -> bool
+
+  (** Get a rational lower bound for a real algebraic number. *)
+  val get_real_algebraic_number_lower_bound : term -> term
+
+  (** Get a rational upper bound for a real algebraic number. *)
+  val get_real_algebraic_number_upper_bound : term -> term
 
   (** Get the string value. *)
   val get_string : term -> string
